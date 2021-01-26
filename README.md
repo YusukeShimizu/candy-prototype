@@ -27,3 +27,8 @@ npm run lint
 ### Customize configuration
 
 See [Configuration Reference](https://cli.vuejs.org/config/).
+
+### deploy
+
+Run `deploy.sh` and go to https://yusukeshimizu.github.io/.  
+See https://cli.vuejs.org/guide/deployment.html#github-pages for manual.
