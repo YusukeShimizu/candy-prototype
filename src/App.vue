@@ -16,25 +16,43 @@
         <v-icon>mdi-github</v-icon>
       </v-btn>
     </v-app-bar>
-
     <v-main>
       <HelloWorld />
+      <Record @add-voice="addVoice" />
+      <VoiceList :voices="voices"></VoiceList>
     </v-main>
   </v-app>
 </template>
 
 <script>
 import HelloWorld from "./components/HelloWorld";
+import VoiceList from "./components/VoiceList";
+import Record from "./components/Record";
 
 export default {
   name: "App",
 
   components: {
-    HelloWorld
+    HelloWorld,
+    VoiceList,
+    Record
   },
 
   data: () => ({
-    //
-  })
+    voices: state.voices
+  }),
+  methods: {
+    addVoice(newvoice) {
+      if (!newvoice) {
+        return;
+      }
+      this.voices.push({
+        id: newvoice
+      });
+    }
+  }
+};
+var state = {
+  voices: [{ id: "Foo" }, { id: "Bar" }]
 };
 </script>
