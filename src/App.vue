@@ -18,7 +18,8 @@
     </v-app-bar>
     <v-main>
       <HelloWorld />
-      <Peer @update-peers="peers = $event" />
+      <Peer @update-peers="updatePeers" />
+      <Peers :peers="peers" />
     </v-main>
   </v-app>
 </template>
@@ -26,19 +27,20 @@
 <script>
 import HelloWorld from "./components/HelloWorld";
 import Peer from "./components/Peer";
+import Peers from "./components/Peers";
 
 export default {
   name: "App",
   components: {
     HelloWorld,
-    Peer
+    Peer,
+    Peers
   },
   data: () => ({
     peers: []
   }),
   methods: {
     updatePeers(peers) {
-      // TODO: filter myself
       if (peers) this.peers = peers;
     }
   }
