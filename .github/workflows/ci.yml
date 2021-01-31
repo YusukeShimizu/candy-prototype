@@ -35,8 +35,5 @@ jobs:
     - name: lint
       run: npm run lint
 
-    - name: unit test
-      run:  npm run test:unit
-
     - name: build
       run:  npm run build
