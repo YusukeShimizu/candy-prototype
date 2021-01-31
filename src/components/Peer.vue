@@ -1,16 +1,16 @@
 <template>
-  <v-row dense>
-    <v-col cols="12">
-      <v-card class="mx-auto" max-width="344">
-        <v-list-item>
-          <v-list-item-icon>
-            <v-icon>mdi-emoticon-outline</v-icon>
-          </v-list-item-icon>
-          <v-list-item-subtitle>{{ peer.id }}</v-list-item-subtitle>
-        </v-list-item>
-      </v-card>
-    </v-col>
-  </v-row>
+  <v-container>
+    <v-row class="text-center">
+      <v-col class="my-10" cols="12">
+        <h1 class="display-2 font-weight-bold mb-3">
+          Welcome👍
+        </h1>
+        <v-row class="my-2" justify="center">
+          <p>Your peer id: {{ peer.id }}</p>
+        </v-row>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script>
@@ -19,9 +19,14 @@ import Peer from "skyway-js";
 export default {
   name: "Peer",
   data: () => ({
-    peer: Peer
+    peer: Peer,
+    localStream: {}
   }),
   mounted: async function() {
+    this.localStream = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+      video: false
+    });
     const peer = new Peer({
       key: process.env.VUE_APP_SKYWAY_APIKEY,
       debug: 3
@@ -35,6 +40,22 @@ export default {
         );
       });
     });
+    peer.on("call", call => {
+      call.answer(this.localStream);
+    });
+  },
+  methods: {
+    makeCall(peerTo) {
+      // const call = this.peer.call(peerTo, this.localStream);
+      // this.connect(call);
+    },
+    connect: function(call) {
+      call.on("stream", stream => {
+        const el = document.getElementById("their-video");
+        el.srcObject = stream;
+        el.play();
+      });
+    }
   }
 };
 </script>

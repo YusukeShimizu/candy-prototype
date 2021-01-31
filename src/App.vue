@@ -4,9 +4,7 @@
       <div class="d-flex align-center">
         <v-icon>mdi-monitor-speaker</v-icon>
       </div>
-
       <v-spacer></v-spacer>
-
       <v-btn
         href="https://github.com/YusukeShimizu/candy-prototype"
         target="_blank"
@@ -17,24 +15,24 @@
       </v-btn>
     </v-app-bar>
     <v-main>
-      <HelloWorld />
-      <Peer @update-peers="updatePeers" />
-      <Peers :peers="peers" />
+      <Peer ref="Peer" @update-peers="updatePeers" @make-call="makeCall" />
+      <Peers @make-call="makeCall" :peers="peers" />
+      <Record />
     </v-main>
   </v-app>
 </template>
 
 <script>
-import HelloWorld from "./components/HelloWorld";
 import Peer from "./components/Peer";
 import Peers from "./components/Peers";
+import Record from "./components/Record";
 
 export default {
   name: "App",
   components: {
-    HelloWorld,
     Peer,
-    Peers
+    Peers,
+    Record
   },
   data: () => ({
     peers: []
@@ -42,6 +40,9 @@ export default {
   methods: {
     updatePeers(peers) {
       if (peers) this.peers = peers;
+    },
+    makeCall(peerTo) {
+      this.$refs.Peer.makeCall(peerTo);
     }
   }
 };
