@@ -18,41 +18,29 @@
     </v-app-bar>
     <v-main>
       <HelloWorld />
-      <Record @add-voice="addVoice" />
-      <VoiceList :voices="voices"></VoiceList>
+      <Peer @update-peers="peers = $event" />
     </v-main>
   </v-app>
 </template>
 
 <script>
 import HelloWorld from "./components/HelloWorld";
-import VoiceList from "./components/VoiceList";
-import Record from "./components/Record";
+import Peer from "./components/Peer";
 
 export default {
   name: "App",
-
   components: {
     HelloWorld,
-    VoiceList,
-    Record
+    Peer
   },
-
   data: () => ({
-    voices: state.voices
+    peers: []
   }),
   methods: {
-    addVoice(newvoice) {
-      if (!newvoice) {
-        return;
-      }
-      this.voices.push({
-        id: newvoice
-      });
+    updatePeers(peers) {
+      // TODO: filter myself
+      if (peers) this.peers = peers;
     }
   }
-};
-var state = {
-  voices: [{ id: "Foo" }, { id: "Bar" }]
 };
 </script>
