@@ -10,6 +10,9 @@
         </v-row>
       </v-col>
     </v-row>
+    <div>
+      <audio autoplay :srcObject.prop="stream" />
+    </div>
   </v-container>
 </template>
 
@@ -20,7 +23,8 @@ export default {
   name: "Peer",
   data: () => ({
     peer: Peer,
-    localStream: {}
+    localStream: {},
+    stream: {}
   }),
   mounted: async function() {
     this.localStream = await navigator.mediaDevices.getUserMedia({
@@ -42,18 +46,18 @@ export default {
     });
     peer.on("call", call => {
       call.answer(this.localStream);
+      this.connect(call);
     });
   },
   methods: {
     makeCall(peerTo) {
-      // const call = this.peer.call(peerTo, this.localStream);
-      // this.connect(call);
+      const call = this.peer.call(peerTo, this.localStream);
+      this.connect(call);
     },
     connect: function(call) {
       call.on("stream", stream => {
-        const el = document.getElementById("their-video");
-        el.srcObject = stream;
-        el.play();
+        this.stream = stream;
+        this.stream.play();
       });
     }
   }
