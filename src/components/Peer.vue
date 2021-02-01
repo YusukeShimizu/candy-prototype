@@ -9,7 +9,10 @@
           <p>Your peer id: {{ peer.id }}</p>
         </v-row>
         <v-row class="my-2" justify="center">
-          <p>peer status: {{ status }}</p>
+          <p>peer status: {{ peerStatus }}</p>
+        </v-row>
+        <v-row class="my-2" justify="center">
+          <p>call status: {{ callStatus }}</p>
         </v-row>
       </v-col>
     </v-row>
@@ -26,7 +29,9 @@ export default {
   name: "Peer",
   data: () => ({
     peer: Peer,
-    status: "beforeOpen",
+    call: Peer.call,
+    peerStatus: "beforeOpen",
+    callStatus: "close",
     localStream: {},
     stream: {}
   }),
@@ -41,7 +46,7 @@ export default {
     });
     peer.on("open", () => {
       this.peer = peer;
-      this.status = "open";
+      this.peerStatus = "open";
       this.peer.listAllPeers(peers => {
         this.$emit(
           "update-peers",
@@ -50,25 +55,27 @@ export default {
       });
     });
     peer.on("call", call => {
-      this.status = "call";
       call.answer(this.localStream);
       this.connect(call);
     });
     peer.on("disconnected", id => {
-      this.status = "disconnected";
+      this.peerStatus = "disconnected";
       alert(id + "との接続が切れました");
     });
     peer.on("error", err => {
-      this.status = "error";
+      this.peerStatus = "error";
       alert(err.message);
     });
     peer.on("close", () => {
-      this.status = "close";
+      this.peerStatus = "close";
       alert("通信が切断しました。");
     });
   },
   destroyed() {
-    window.removeEventListener("beforeunload", this.peer.destroy());
+    window.removeEventListener("beforeunload", () => {
+      this.peer.destroy();
+      this.call.close({ forceClose: true });
+    });
   },
   methods: {
     makeCall(peerTo) {
@@ -77,12 +84,12 @@ export default {
     },
     connect: async function(call) {
       call.on("close", () => {
-        this.status = "close";
+        this.callStatus = "close";
         alert("通信が切断しました。");
       });
       call.on("stream", stream => {
         this.stream = stream;
-        this.status = "connect";
+        this.callStatus = "connect";
         this.stream.play();
       });
     }
