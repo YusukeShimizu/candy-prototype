@@ -18,6 +18,12 @@ npm run serve
 npm run build
 ```
 
+### Compiles and minifies for electron
+
+```
+npm run electron:build
+```
+
 ### Lints and fixes files
 
 ```
