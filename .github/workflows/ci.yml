@@ -39,8 +39,6 @@ jobs:
       run:  npm run build
 
     - name: build/electron
-      env:
-        GH_TOKEN: ${{ secrets.GH_TOKEN }}
       run: |
         echo ${GH_TOKEN}
         npm run electron:build
