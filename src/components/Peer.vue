@@ -2,9 +2,7 @@
   <v-container>
     <v-row class="text-center">
       <v-col class="my-10" cols="12">
-        <h1 class="display-2 font-weight-bold mb-3">
-          Welcome👍
-        </h1>
+        <h1 class="display-2 font-weight-bold mb-3">Welcome👍</h1>
         <v-row class="my-2" justify="center">
           <p>Your peer id: {{ peer.id }}</p>
         </v-row>
@@ -24,6 +22,7 @@
 
 <script>
 import Peer from "skyway-js";
+import { db } from "../db.js";
 
 export default {
   name: "Peer",
@@ -33,8 +32,12 @@ export default {
     peerStatus: "beforeOpen",
     callStatus: "close",
     localStream: {},
-    stream: {}
+    stream: {},
+    firebase: []
   }),
+  firestore: {
+    firebase: db.collection("documents")
+  },
   mounted: async function() {
     this.localStream = await navigator.mediaDevices.getUserMedia({
       audio: true,
