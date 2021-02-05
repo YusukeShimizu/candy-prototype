@@ -1,6 +1,7 @@
 # candy-prototype
 
 ## Project setup
+enable [Firebase Local Emulator Suite](https://firebase.google.com/docs/emulator-suite).
 
 ```
 npm install
@@ -9,7 +10,7 @@ cp .env.sample .env // with edit it
 ### Compiles and hot-reloads for development
 
 ```
-npm run serve
+npm run serve:withfirebase
 ```
 
 ### Compiles and minifies for production
