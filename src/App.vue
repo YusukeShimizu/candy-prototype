@@ -15,28 +15,46 @@
       </v-btn>
     </v-app-bar>
     <v-main>
-      <Peer ref="Peer" @update-peers="updatePeers" @make-call="makeCall" />
-      <Peers @make-call="makeCall" :peers="peers" />
-      <Record />
+      <div v-if="isLogin">
+        <Peer ref="Peer" @update-peers="updatePeers" @make-call="makeCall" />
+        <Peers @make-call="makeCall" :peers="peers" />
+        <Record />
+        <Logout />
+      </div>
+      <div v-else>
+        <Login />
+      </div>
     </v-main>
   </v-app>
 </template>
 
 <script>
+import Login from "./components/Login";
+import Logout from "./components/Logout";
 import Peer from "./components/Peer";
 import Peers from "./components/Peers";
 import Record from "./components/Record";
+import firebase from "firebase/app";
 
 export default {
   name: "App",
   components: {
+    Login,
+    Logout,
     Peer,
     Peers,
     Record
   },
   data: () => ({
-    peers: []
+    peers: [],
+    isLogin: false
   }),
+  mounted: function() {
+    firebase.auth().onAuthStateChanged(user => {
+      console.log("onAuthStateChanged", user);
+      this.isLogin = user ? true : false;
+    });
+  },
   methods: {
     updatePeers(peers) {
       if (peers) this.peers = peers;

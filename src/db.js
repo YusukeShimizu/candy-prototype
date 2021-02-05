@@ -16,6 +16,7 @@ firebase.initializeApp({
 
 if (location.hostname === "localhost") {
   firebase.firestore().useEmulator("localhost", 8085);
+  firebase.auth().useEmulator("http://localhost:9099/");
 }
 
 export const db = firebase.firestore();
