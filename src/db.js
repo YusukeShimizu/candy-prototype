@@ -2,6 +2,7 @@
 
 import firebase from "firebase/app";
 import "firebase/firestore";
+import "firebase/auth";
 
 // Initialize Firebase
 firebase.initializeApp({
@@ -16,9 +17,9 @@ firebase.initializeApp({
 
 if (location.hostname === "localhost") {
   firebase.firestore().useEmulator("localhost", 8085);
-  firebase.auth().useEmulator("http://localhost:9099/");
+  firebase.auth().useEmulator("http://localhost:9099");
 }
-
+firebase.firestore.setLogLevel("debug");
 export const db = firebase.firestore();
 
 // Export types that exists in Firestore - Uncomment if you need them in your app

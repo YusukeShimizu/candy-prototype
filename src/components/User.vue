@@ -19,14 +19,15 @@
     </div>
   </v-container>
 </template>
-
 <script>
-import Peer from "skyway-js";
 import { db } from "../db.js";
+import firebase from "firebase/app";
+import Peer from "skyway-js";
 
 export default {
-  name: "Peer",
+  name: "User",
   data: () => ({
+    user: null,
     peer: Peer,
     call: Peer.call,
     peerStatus: "beforeOpen",
@@ -35,10 +36,15 @@ export default {
     stream: {},
     firebase: []
   }),
-  firestore: {
-    firebase: db.collection("documents")
-  },
   mounted: async function() {
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        this.$emit("is-login", true);
+        this.setUser(user || null);
+      } else {
+        this.$emit("is-login", false);
+      }
+    });
     this.localStream = await navigator.mediaDevices.getUserMedia({
       audio: true,
       video: false
@@ -74,13 +80,23 @@ export default {
       alert("通信が切断しました。");
     });
   },
-  destroyed() {
-    window.removeEventListener("beforeunload", () => {
-      this.peer.destroy();
-      this.call.close({ forceClose: true });
-    });
-  },
   methods: {
+    setUser(user) {
+      if (!user) return;
+      db.collection("users")
+        .doc(user.uid)
+        .set({
+          name: user.displayName,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        })
+        .then(function(docRef) {
+          console.log("Document written with ID: ", docRef.id);
+        })
+        .catch(function(error) {
+          console.error("Error adding document: ", error);
+        });
+      this.user = user;
+    },
     makeCall(peerTo) {
       const call = this.peer.call(peerTo, this.localStream);
       this.connect(call);
@@ -96,6 +112,12 @@ export default {
         this.stream.play();
       });
     }
+  },
+  destroyed() {
+    window.removeEventListener("beforeunload", () => {
+      this.peer.destroy();
+      this.call.close({ forceClose: true });
+    });
   }
 };
 </script>
