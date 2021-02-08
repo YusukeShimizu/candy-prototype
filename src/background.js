@@ -27,7 +27,12 @@ async function createWindow() {
     if (!process.env.IS_TEST) win.webContents.openDevTools();
   } else {
     // Note: always load github pages currently
-    win.loadURL("https://yusukeshimizu.github.io/");
+    win.loadURL("https://yusukeshimizu.github.io/", {
+      //FIXME:userAgent for auth.
+      // https://github.com/firebase/firebase-js-sdk/issues/2478
+      userAgent:
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3864.0 Safari/537.36"
+    });
   }
 }
 
