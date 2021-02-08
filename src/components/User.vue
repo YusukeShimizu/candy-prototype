@@ -38,47 +38,56 @@ export default {
   }),
   mounted: async function() {
     firebase.auth().onAuthStateChanged(user => {
-      if (user) {
-        this.$emit("is-login", true);
-        this.setUser(user || null);
-      } else {
-        this.$emit("is-login", false);
-      }
+      if (user) this.setUser(user);
     });
     this.localStream = await navigator.mediaDevices.getUserMedia({
       audio: true,
       video: false
     });
-    const peer = new Peer({
-      key: process.env.VUE_APP_SKYWAY_APIKEY,
-      debug: 3
-    });
-    peer.on("open", () => {
-      this.peer = peer;
-      this.peerStatus = "open";
-      this.peer.listAllPeers(peers => {
-        this.$emit(
-          "update-peers",
-          peers.filter(p => p != peer.id)
-        );
-      });
-    });
-    peer.on("call", call => {
-      call.answer(this.localStream);
-      this.connect(call);
-    });
-    peer.on("disconnected", id => {
-      this.peerStatus = "disconnected";
-      alert(id + "との接続が切れました");
-    });
-    peer.on("error", err => {
-      this.peerStatus = "error";
-      alert(err.message);
-    });
-    peer.on("close", () => {
-      this.peerStatus = "close";
-      alert("通信が切断しました。");
-    });
+  },
+  watch: {
+    user: function(user) {
+      if (user) {
+        const peer = new Peer({
+          key: process.env.VUE_APP_SKYWAY_APIKEY,
+          debug: 3
+        });
+        peer.on("open", () => {
+          this.peer = peer;
+          db.collection("users")
+            .doc(user.uid)
+            .set({
+              name: user.displayName,
+              createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+              peerID: peer.id,
+              id: user.uid
+            })
+            .then(function(docRef) {
+              console.log("Document written with ID: ", docRef);
+            })
+            .catch(function(error) {
+              console.error("Error adding document: ", error);
+            });
+          this.peerStatus = "open";
+        });
+        peer.on("call", call => {
+          call.answer(this.localStream);
+          this.connect(call);
+        });
+        peer.on("disconnected", id => {
+          this.peerStatus = "disconnected";
+          alert(id + "との接続が切れました");
+        });
+        peer.on("error", err => {
+          this.peerStatus = "error";
+          alert(err.message);
+        });
+        peer.on("close", () => {
+          this.peerStatus = "close";
+          alert("通信が切断しました。");
+        });
+      }
+    }
   },
   methods: {
     setUser(user) {
@@ -90,7 +99,7 @@ export default {
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         })
         .then(function(docRef) {
-          console.log("Document written with ID: ", docRef.id);
+          console.log("Document written with ID: ", docRef);
         })
         .catch(function(error) {
           console.error("Error adding document: ", error);

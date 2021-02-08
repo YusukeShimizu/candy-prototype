@@ -1,12 +1,7 @@
 <template>
   <div>
-    <User
-      ref="User"
-      @is-login="setLoginStatus"
-      @update-peers="updatePeers"
-      @make-call="makeCall"
-    />
-    <Peers @make-call="makeCall" :peers="peers" />
+    <User ref="User" @make-call="makeCall" />
+    <Users @make-call="makeCall" />
     <Record />
     <Logout />
   </div>
@@ -15,7 +10,7 @@
 <script>
 import Logout from "./components/Logout";
 import User from "./components/User";
-import Peers from "./components/Peers";
+import Users from "./components/Users";
 import Record from "./components/Record";
 
 export default {
@@ -23,22 +18,12 @@ export default {
   components: {
     Logout,
     User,
-    Peers,
+    Users,
     Record
   },
-  data: () => ({
-    peers: [],
-    login: false
-  }),
   methods: {
-    setLoginStatus(isLogin) {
-      this.login = isLogin;
-    },
-    updatePeers(peers) {
-      if (peers) this.peers = peers;
-    },
     makeCall(peerTo) {
-      this.$refs.Peer.makeCall(peerTo);
+      this.$refs.User.makeCall(peerTo);
     }
   }
 };
