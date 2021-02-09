@@ -38,12 +38,17 @@ export default {
   }),
   mounted: async function() {
     firebase.auth().onAuthStateChanged(user => {
-      if (user) this.setUser(user);
+      if (user) {
+        this.setUser(user);
+      } else {
+        this.close();
+      }
     });
     this.localStream = await navigator.mediaDevices.getUserMedia({
       audio: true,
       video: false
     });
+    window.addEventListener("beforeunload", this.close);
   },
   watch: {
     user: function(user) {
@@ -120,13 +125,21 @@ export default {
         this.callStatus = "connect";
         this.stream.play();
       });
-    }
-  },
-  destroyed() {
-    window.removeEventListener("beforeunload", () => {
+    },
+    close() {
       this.peer.destroy();
-      this.call.close({ forceClose: true });
-    });
+      db.collection("users")
+        .doc(this.user.uid)
+        .update({
+          peerID: ""
+        })
+        .then(function(docRef) {
+          console.log("Document written with ID: ", docRef);
+        })
+        .catch(function(error) {
+          console.error("Error adding document: ", error);
+        });
+    }
   }
 };
 </script>
