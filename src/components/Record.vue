@@ -66,11 +66,8 @@ export default {
     stop() {
       const audioBlob = new Blob(this.chunks);
       const url = URL.createObjectURL(audioBlob);
-      let a = document.createElement("a");
-      a.href = url;
-      a.download = Math.floor(Date.now() / 1000) + this.audioExtension;
-      document.body.appendChild(a);
-      a.click();
+      const audio = new Audio(url);
+      audio.play();
     },
     addVoice() {
       this.isRecording = true;
