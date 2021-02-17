@@ -1,6 +1,6 @@
 <template>
   <v-row dense>
-    <v-col v-for="(user, index) in callableUsers" :key="index" cols="12">
+    <v-col v-for="(user, index) in users" :key="index" cols="12">
       <v-card class="mx-auto" max-width="400">
         <v-list-item>
           <v-list-item-icon>
@@ -24,18 +24,12 @@
 
 <script>
 import { db } from "../db.js";
-import firebase from "firebase/app";
 
 export default {
   name: "Users",
   data: () => ({
     users: []
   }),
-  computed: {
-    callableUsers: function() {
-      return this.users.filter(user => user.peerID != "");
-    }
-  },
   methods: {
     call(peerTo) {
       alert("calling to " + peerTo);
@@ -47,9 +41,7 @@ export default {
   },
   firestore() {
     return {
-      users: db
-        .collection("users")
-        .where("id", "!=", firebase.auth().currentUser.uid)
+      users: db.collection("users").where("peerID", "!=", "")
     };
   }
 };
