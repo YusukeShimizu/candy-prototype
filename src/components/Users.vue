@@ -28,7 +28,7 @@ import { db } from "../db.js";
 export default {
   name: "Users",
   data: () => ({
-    users: []
+    users: {}
   }),
   methods: {
     call(peerTo) {
@@ -39,10 +39,8 @@ export default {
       alert("Listen for " + peer + ". Implement me!");
     }
   },
-  firestore() {
-    return {
-      users: db.collection("users").where("peerID", "!=", "")
-    };
+  firebase: {
+    users: db.ref("users")
   }
 };
 </script>

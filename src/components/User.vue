@@ -37,13 +37,36 @@ export default {
     firebase: []
   }),
   mounted: async function() {
+    const isOfflineForDatabase = {
+      state: "offline",
+      last_changed: firebase.database.ServerValue.TIMESTAMP
+    };
+    const isOnlineForDatabase = {
+      state: "online",
+      last_changed: firebase.database.ServerValue.TIMESTAMP
+    };
     firebase.auth().onAuthStateChanged(user => {
       if (user) {
-        this.setUser(user);
+        this.user = user;
+        const userStatusDatabaseRef = db.ref("users/" + this.user.uid);
+        db.ref(".info/connected").on("value", function(snapshot) {
+          // If we're not currently connected, don't do anything.
+          if (snapshot.val() == false) {
+            return;
+          }
+          userStatusDatabaseRef
+            .onDisconnect()
+            .update(isOfflineForDatabase)
+            .then(function() {
+              userStatusDatabaseRef.update(isOnlineForDatabase);
+            });
+        });
       } else {
+        db.ref("users/" + this.user.uid).update(isOfflineForDatabase);
         this.close();
       }
     });
+
     this.localStream = await navigator.mediaDevices.getUserMedia({
       audio: true,
       video: false
@@ -59,20 +82,11 @@ export default {
         });
         peer.on("open", () => {
           this.peer = peer;
-          db.collection("users")
-            .doc(user.uid)
-            .set({
-              name: user.displayName,
-              createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-              peerID: peer.id,
-              id: user.uid
-            })
-            .then(function(docRef) {
-              console.log("Document written with ID: ", docRef);
-            })
-            .catch(function(error) {
-              console.error("Error adding document: ", error);
-            });
+          db.ref("users/" + user.uid).update({
+            name: user.displayName,
+            peerID: peer.id,
+            id: user.uid
+          });
           this.peerStatus = "open";
         });
         peer.on("call", call => {
@@ -95,22 +109,6 @@ export default {
     }
   },
   methods: {
-    setUser(user) {
-      if (!user) return;
-      db.collection("users")
-        .doc(user.uid)
-        .set({
-          name: user.displayName,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        })
-        .then(function(docRef) {
-          console.log("Document written with ID: ", docRef);
-        })
-        .catch(function(error) {
-          console.error("Error adding document: ", error);
-        });
-      this.user = user;
-    },
     makeCall(peerTo) {
       const call = this.peer.call(peerTo, this.localStream);
       this.connect(call);
@@ -128,17 +126,6 @@ export default {
     },
     close() {
       this.peer.destroy();
-      db.collection("users")
-        .doc(this.user.uid)
-        .update({
-          peerID: ""
-        })
-        .then(function(docRef) {
-          console.log("Document written with ID: ", docRef);
-        })
-        .catch(function(error) {
-          console.error("Error adding document: ", error);
-        });
     }
   }
 };

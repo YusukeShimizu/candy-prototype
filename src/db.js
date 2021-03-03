@@ -1,7 +1,7 @@
 // Conveniently import this file anywhere to use db
 
 import firebase from "firebase/app";
-import "firebase/firestore";
+import "firebase/database";
 import "firebase/auth";
 
 // Initialize Firebase
@@ -15,13 +15,9 @@ firebase.initializeApp({
   measurementId: process.env.VUE_APP_MEASUREMENT_ID
 });
 
+export const db = firebase.database();
+
 if (location.hostname === "localhost") {
-  firebase.firestore().useEmulator("localhost", 8085);
+  db.useEmulator("localhost", 9000);
   firebase.auth().useEmulator("http://localhost:9099");
 }
-firebase.firestore.setLogLevel("debug");
-export const db = firebase.firestore();
-
-// Export types that exists in Firestore - Uncomment if you need them in your app
-const { Timestamp, GeoPoint } = firebase.firestore;
-export { Timestamp, GeoPoint };
