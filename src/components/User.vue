@@ -37,13 +37,36 @@ export default {
     firebase: []
   }),
   mounted: async function() {
+    const isOfflineForDatabase = {
+      state: "offline",
+      last_changed: firebase.database.ServerValue.TIMESTAMP
+    };
+    const isOnlineForDatabase = {
+      state: "online",
+      last_changed: firebase.database.ServerValue.TIMESTAMP
+    };
     firebase.auth().onAuthStateChanged(user => {
       if (user) {
-        this.setUser(user);
+        this.user = user;
+        const userStatusDatabaseRef = db.ref("users/" + this.user.uid);
+        db.ref(".info/connected").on("value", function(snapshot) {
+          // If we're not currently connected, don't do anything.
+          if (snapshot.val() == false) {
+            return;
+          }
+          userStatusDatabaseRef
+            .onDisconnect()
+            .update(isOfflineForDatabase)
+            .then(function() {
+              userStatusDatabaseRef.update(isOnlineForDatabase);
+            });
+        });
       } else {
+        db.ref("users/" + this.user.uid).update(isOfflineForDatabase);
         this.close();
       }
     });
+
     this.localStream = await navigator.mediaDevices.getUserMedia({
       audio: true,
       video: false
@@ -83,60 +106,9 @@ export default {
           alert("通信が切断しました。");
         });
       }
-      // Create a reference to this user's specific status node.
-      // This is where we will store data about being online/offline.
-      const userStatusDatabaseRef = db.ref("users/" + user.uid);
-
-      // We'll create two constants which we will write to
-      // the Realtime database when this device is offline
-      // or online.
-      const isOfflineForDatabase = {
-        state: "offline",
-        last_changed: firebase.database.ServerValue.TIMESTAMP
-      };
-
-      const isOnlineForDatabase = {
-        state: "online",
-        last_changed: firebase.database.ServerValue.TIMESTAMP
-      };
-
-      // Create a reference to the special '.info/connected' path in
-      // Realtime Database. This path returns `true` when connected
-      // and `false` when disconnected.
-      db.ref(".info/connected").on("value", function(snapshot) {
-        // If we're not currently connected, don't do anything.
-        if (snapshot.val() == false) {
-          return;
-        }
-
-        // If we are currently connected, then use the 'onDisconnect()'
-        // method to add a set which will only trigger once this
-        // client has disconnected by closing the app,
-        // losing internet, or any other means.
-        userStatusDatabaseRef
-          .onDisconnect()
-          .update(isOfflineForDatabase)
-          .then(function() {
-            // The promise returned from .onDisconnect().set() will
-            // resolve as soon as the server acknowledges the onDisconnect()
-            // request, NOT once we've actually disconnected:
-            // https://firebase.google.com/docs/reference/js/firebase.database.OnDisconnect
-
-            // We can now safely set ourselves as 'online' knowing that the
-            // server will mark us as offline once we lose connection.
-            userStatusDatabaseRef.update(isOnlineForDatabase);
-          });
-      });
     }
   },
   methods: {
-    setUser(user) {
-      if (!user) return;
-      db.ref("users/" + user.uid).update({
-        name: user.displayName
-      });
-      this.user = user;
-    },
     makeCall(peerTo) {
       const call = this.peer.call(peerTo, this.localStream);
       this.connect(call);
